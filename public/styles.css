@@ -1,0 +1,27 @@
+body {
+    font-family: system-ui, sans-serif;
+    color: #15213a;
+    background: white;
+}
+
+header,
+main,
+footer {
+    width: 100%;
+    max-width: 760px;
+    margin-inline: auto;
+}
+
+#chat-form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#messages {
+    overflow-wrap: break-word;
+}
+
+#compteur {
+    align-self: flex-end;
+}
