@@ -8,7 +8,17 @@ const champ = document.querySelector('#message');
 const liste = document.querySelector('#messages');
 const longueurTxt = document.querySelector('#longueurAct');
 const effacer = document.querySelector('#effacer');
+const accueil = document.querySelector('#accueil');
+const suggestions = document.querySelector('#suggestions');
 const historique = [];
+
+function mettreAJourAccueil() {
+  if (accueil) {
+    accueil.hidden = historique.length > 0;
+  }
+}
+
+mettreAJourAccueil();
 
 try {
   const memoire = localStorage.getItem('capweb.historique');
@@ -18,6 +28,7 @@ try {
 
     historique.push(...messages);
     renderMessages(historique, liste);
+    mettreAJourAccueil();
   }
 } catch (error) {
   historique.length = 0;
@@ -40,6 +51,7 @@ formulaire?.addEventListener('submit', (event) => {
     historique.push({ role: 'assistant', text: replyTo(texte) });
     localStorage.setItem('capweb.historique', JSON.stringify(historique));
     renderMessages(historique, liste);
+    mettreAJourAccueil();
     statut.textContent = '';
     champ.value = '';
     longueurTxt.textContent = '0';
@@ -58,6 +70,15 @@ effacer?.addEventListener('click', (event) => {
     historique.length = 0;
     localStorage.removeItem('capweb.historique');
     renderMessages(historique, liste);
+    mettreAJourAccueil();
+  }
+});
+
+suggestions?.addEventListener('click', (event) => {
+  const cible = event.target.closest('button');
+  if (cible && champ) {
+    champ.value = cible.textContent;
+    champ.focus();
   }
 });
 

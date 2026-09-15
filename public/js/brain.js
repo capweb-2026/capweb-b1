@@ -13,14 +13,14 @@ export function replyTo(message) {
     let reponse;
     switch (processedMessage) {
         case 'salut':
-        case 'bonjour': reponse = 'Bonjour, je suis Cuity, votre bot cuisine anti-gaspi ! ';
+        case 'bonjour': reponse = 'Cuity: Bonjour, je suis Cuity, votre bot cuisine anti-gaspi !';
             break;
-        case 'aide': reponse = 'Vous pouvez utiliser les mots suivants : bonjour, salut, aide, test';
+        case 'aide': reponse = 'Cuity: Vous pouvez utiliser les mots suivants : bonjour, salut, aide, test';
             break;
-        case 'test': reponse = 'Ceci est un test';
+        case 'test': reponse = 'Cuity: Ceci est un test';
             break;
         default:
-            reponse = 'Je ne connais pas ce mot. Ecrivez aide si vous êtes perdu';
+            reponse = 'Cuity: Je ne connais pas ce mot. Ecrivez aide si vous êtes perdu';
     }
     return reponse;
 }
