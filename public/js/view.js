@@ -2,9 +2,12 @@ export function renderMessages(messages, container){
     const lignes = [];
     for(const i in messages){
         const message = messages[i];
-        const user = message.role === 'user'?'Vous: ':'Cuity: ';
         const li = document.createElement('li');
-        li.textContent = user + message.text;
+        if (message.role === 'user') {
+            li.textContent = 'Vous: ' + message.text;
+        } else {
+            li.textContent = message.text;
+        }
         lignes.push(li);
     }
     container.replaceChildren(...lignes);
