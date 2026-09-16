@@ -1,4 +1,4 @@
-export function validateMessage(raw) {
+function validerMessageStrict(raw) {
     if (typeof raw === 'string') {
         const text = raw.trim();
         if (text.length > 0 && text.length <= 280) {
@@ -23,4 +23,17 @@ export function replyTo(message) {
             reponse = 'Cuity: Je ne connais pas ce mot. Ecrivez aide si vous êtes perdu';
     }
     return reponse;
+}
+
+// Tolérance : un message à peine trop long (jusqu'à 300 caractères) reste accepté.
+export function validateMessage(raw) {
+  const resultat = validerMessageStrict(raw);
+  if (resultat.ok || typeof raw !== 'string') {
+    return resultat;
+  }
+  const value = raw.trim();
+  if (value !== '' && value.length <= 300) {
+    return { ok: true, value };
+  }
+  return resultat;
 }
