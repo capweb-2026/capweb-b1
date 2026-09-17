@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { repondre } from './ia.js';
 
 // Liste explicite : seuls ces chemins publics sont servis.
 const FICHIERS = {
@@ -34,12 +35,6 @@ export function createApp({ publicDir, version = 'dev' } = {}) {
 
   async function traiter(req, res) {
     const methode = (req.method ?? 'GET').toUpperCase();
-    // Seules GET et HEAD sont autorisées (outillage statique J1).
-    if (methode !== 'GET' && methode !== 'HEAD') {
-      res.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
-      res.end('Méthode non autorisée');
-      return;
-    }
     let chemin = '/';
     try {
       // URL puis décodage : tout encodage suspect hors liste donne 404.
@@ -48,6 +43,47 @@ export function createApp({ publicDir, version = 'dev' } = {}) {
     } catch {
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
       res.end('Non trouvé');
+      return;
+    }
+    // Porte d'entrée locale vers le module IA (sans clé : repli sur les règles).
+    if (chemin === '/api/chat') {
+      if (methode !== 'POST') {
+        res.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end('Méthode non autorisée');
+        return;
+      }
+      let brut = '';
+      try {
+        for await (const morceau of req) {
+          brut += morceau;
+          if (brut.length > 20000) {
+            break;
+          }
+        }
+        const corps = brut === '' ? {} : JSON.parse(brut);
+        const reponse = await repondre({
+          message: corps.message,
+          historique: Array.isArray(corps.historique) ? corps.historique : []
+        });
+        if (reponse.invalide === true) {
+          const erreur = JSON.stringify({ erreur: reponse.texte });
+          res.writeHead(400, { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(erreur) });
+          res.end(erreur);
+          return;
+        }
+        const sortie = JSON.stringify({ texte: reponse.texte, source: reponse.source });
+        res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(sortie) });
+        res.end(sortie);
+      } catch {
+        res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end('Requête invalide');
+      }
+      return;
+    }
+    // Seules GET et HEAD sont autorisées (outillage statique J1).
+    if (methode !== 'GET' && methode !== 'HEAD') {
+      res.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+      res.end('Méthode non autorisée');
       return;
     }
     // Métadonnée de version fournie au démarrage.
