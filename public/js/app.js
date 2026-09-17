@@ -42,26 +42,53 @@ champ?.addEventListener('input', (event) => {
   longueurTxt.textContent = longueur;
 });
 
-// J1 : interface seule, on bloque l’envoi et on l’explique.
+// J3 : la page demande au serveur (/api/chat), repli local si échec.
 formulaire?.addEventListener('submit', (event) => {
   event.preventDefault();
   const texte = champ.value.trim();
-  if (validateMessage(texte).ok) {
-    historique.push({ role: 'user', text: texte });
-    historique.push({ role: 'assistant', text: replyTo(texte) });
-    localStorage.setItem('capweb.historique', JSON.stringify(historique));
-    renderMessages(historique, liste);
-    mettreAJourAccueil();
-    statut.textContent = '';
-    champ.value = '';
-    longueurTxt.textContent = '0';
-    champ.focus();
-  } else {
+  const validation = validateMessage(texte);
+  if (!validation.ok) {
     statut.textContent = 'Le message ne doit pas être vide.';
     champ.value = '';
     longueurTxt.textContent = '0';
     champ.focus();
+    return;
   }
+  const valeur = validation.value;
+  historique.push({ role: 'user', text: valeur });
+  localStorage.setItem('capweb.historique', JSON.stringify(historique));
+  renderMessages(historique, liste);
+  mettreAJourAccueil();
+  statut.textContent = '';
+  champ.value = '';
+  longueurTxt.textContent = '0';
+  champ.focus();
+
+  const passe = historique.slice(0, -1);
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: { accept: 'application/json', 'content-type': 'application/json' },
+    body: JSON.stringify({ message: valeur, historique: passe.slice(-6) })
+  })
+    .then((reponse) => (reponse.ok ? reponse.json() : null))
+    .then((donnees) => {
+      const recu = donnees && typeof donnees.texte === 'string' ? donnees : null;
+      const texteAssistant = recu ? recu.texte : replyTo(valeur);
+      historique.push({ role: 'assistant', text: texteAssistant });
+      localStorage.setItem('capweb.historique', JSON.stringify(historique));
+      renderMessages(historique, liste);
+      mettreAJourAccueil();
+      if (!recu || recu.source !== 'ia') {
+        statut.textContent = 'Mode dégradé : réponse de secours.';
+      }
+    })
+    .catch(() => {
+      historique.push({ role: 'assistant', text: replyTo(valeur) });
+      localStorage.setItem('capweb.historique', JSON.stringify(historique));
+      renderMessages(historique, liste);
+      mettreAJourAccueil();
+      statut.textContent = 'Mode dégradé : réponse de secours.';
+    });
 });
 
 effacer?.addEventListener('click', (event) => {
