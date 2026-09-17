@@ -3,8 +3,11 @@ import { replyTo, validateMessage } from "../public/js/brain.js";
 // Seul module autorisé à parler à la passerelle.
 // Aucune clé ici : lue dans process.env au moment de l'appel.
 
-export const DELAI_MAX = 4000;
+export const DELAI_MAX = 15000;
 export const MODELE_IA = "capweb-ia";
+
+// Messages connus des règles : réponse immédiate, sans appel à l'IA.
+const MESSAGES_IMMEDIATS = new Set(["salut", "bonjour", "aide", "test"]);
 
 export const PROMPT_SYSTEME = [
   "Tu es Cuity, assistante cuisine anti-gaspillage. Tu réponds en français.",
@@ -88,6 +91,10 @@ export async function repondre({ message, historique = [], appeler = appelerPass
     return { texte: validation.error, source: "regles", invalide: true };
   }
   const valeur = validation.value;
+  // Choix SPEC.md : les messages connus des règles gardent leur réponse immédiate.
+  if (MESSAGES_IMMEDIATS.has(valeur.toLowerCase())) {
+    return { texte: mettreEnForme(replyTo(valeur), valeur), source: "regles" };
+  }
   const messages = versMessagesOpenAI(valeur, historique);
   let minuteur;
   try {

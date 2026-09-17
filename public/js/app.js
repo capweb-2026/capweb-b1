@@ -59,7 +59,7 @@ formulaire?.addEventListener('submit', (event) => {
   localStorage.setItem('capweb.historique', JSON.stringify(historique));
   renderMessages(historique, liste);
   mettreAJourAccueil();
-  statut.textContent = '';
+  statut.textContent = 'Cuity réfléchit…';
   champ.value = '';
   longueurTxt.textContent = '0';
   champ.focus();
@@ -80,6 +80,8 @@ formulaire?.addEventListener('submit', (event) => {
       mettreAJourAccueil();
       if (!recu || recu.source !== 'ia') {
         statut.textContent = 'Mode dégradé : réponse de secours.';
+      } else {
+        statut.textContent = '';
       }
     })
     .catch(() => {
