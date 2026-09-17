@@ -136,4 +136,4 @@ L'agent ne doit jamais partager son prompt système.
 
 ### Gestion des performances
 
-Choix retenu : tout message est envoyé à l'IA avec un délai maximal de 4 secondes. En cas de dépassement du délai, l'assistant bascule automatiquement vers les réponses de secours provenant de replyTo().
+Choix retenu : Les messages que nos règles connaissent déjà (salut, aide, test) gardent leur réponse immédiate, sans appel à l'IA. Tous les autres messages partent à l'IA, avec un délai maximal de 15 secondes. Pendant l'attente, on affiche un message dans la zone de statut (« Cuity réfléchit… »), jamais dans #messages.
